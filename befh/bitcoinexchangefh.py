@@ -22,6 +22,33 @@ from befh.mysql_client import MysqlClient
 from befh.sqlite_client import SqliteClient
 from befh.file_client import FileClient
 from befh.zmq_client import ZmqClient
+from befh.exchanges.gateway import ExchangeGateway
+from befh.exchanges.bitmex import ExchGwBitmex
+from befh.exchanges.btcc import ExchGwBtccSpot, ExchGwBtccFuture
+from befh.exchanges.bitfinex import ExchGwBitfinex
+from befh.exchanges.okcoin import ExchGwOkCoin
+from befh.exchanges.kraken import ExchGwKraken
+from befh.exchanges.gdax import ExchGwGdax
+from befh.exchanges.bitstamp import ExchGwBitstamp
+from befh.exchanges.huobi import ExchGwHuoBi
+from befh.exchanges.coincheck import ExchGwCoincheck
+from befh.exchanges.gatecoin import ExchGwGatecoin
+from befh.exchanges.quoine import ExchGwQuoine
+from befh.exchanges.poloniex import ExchGwPoloniex
+from befh.exchanges.bittrex import ExchGwBittrex
+from befh.exchanges.yunbi import ExchGwYunbi
+from befh.exchanges.liqui import ExchGwLiqui
+from befh.exchanges.binance import ExchGwBinance
+from befh.exchanges.cryptopia import ExchGwCryptopia
+from befh.exchanges.okex import ExchGwOkex
+from befh.exchanges.wex import ExchGwWex
+from befh.exchanges.bitflyer import ExchGwBitflyer
+from befh.exchanges.coinone import ExchGwCoinOne
+from befh.clients.kdbplus import KdbPlusClient
+from befh.clients.mysql import MysqlClient
+from befh.clients.sqlite import SqliteClient
+from befh.clients.csv import FileClient
+from befh.clients.zmq import ZmqClient
 from befh.subscription_manager import SubscriptionManager
 from befh.util import Logger
 
@@ -111,7 +138,15 @@ def main():
     if args.exchtime:
         ExchangeGateway.is_local_timestamp = False
 
+    # Initialize subscriptions
     subscription_instmts = SubscriptionManager(args.instmts).get_subscriptions()
+    if len(subscription_instmts) == 0:
+        print('Error: No instrument is found in the subscription file. ' +
+              'Please check the file path and the content of the subscription file.')
+        parser.print_help()
+        sys.exit(1)
+
+    # Initialize snapshot destination
     ExchangeGateway.init_snapshot_table(db_clients)
 
     Logger.info('[main]', 'Subscription file = %s' % args.instmts)
@@ -131,10 +166,20 @@ def main():
     exch_gws.append(ExchGwKraken(db_clients))
     exch_gws.append(ExchGwGdax(db_clients))
     exch_gws.append(ExchGwBitstamp(db_clients))
+    exch_gws.append(ExchGwBitflyer(db_clients))
+    exch_gws.append(ExchGwHuoBi(db_clients))
+    exch_gws.append(ExchGwCoincheck(db_clients))
+    exch_gws.append(ExchGwCoinOne(db_clients))
     exch_gws.append(ExchGwGatecoin(db_clients))
     exch_gws.append(ExchGwQuoine(db_clients))
     exch_gws.append(ExchGwPoloniex(db_clients))
     exch_gws.append(ExchGwBittrex(db_clients))
+    exch_gws.append(ExchGwYunbi(db_clients))
+    exch_gws.append(ExchGwLiqui(db_clients))
+    exch_gws.append(ExchGwBinance(db_clients))
+    exch_gws.append(ExchGwCryptopia(db_clients))
+    exch_gws.append(ExchGwOkex(db_clients))
+    exch_gws.append(ExchGwWex(db_clients))
     threads = []
     for exch in exch_gws:
         for instmt in subscription_instmts:

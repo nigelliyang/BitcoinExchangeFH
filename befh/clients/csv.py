@@ -1,8 +1,9 @@
-from befh.database_client import DatabaseClient
+from befh.clients.database import DatabaseClient
 from befh.util import Logger
 import threading
 import os
 import csv
+
 
 class FileClient(DatabaseClient):
     """
@@ -44,7 +45,7 @@ class FileClient(DatabaseClient):
             return from_str
 
 
-    def create(self, table, columns, types, is_ifnotexists=True):
+    def create(self, table, columns, types, primary_key_index=(), is_ifnotexists=True):
         """
         Create table in the database
         :param table: Table name
@@ -53,7 +54,6 @@ class FileClient(DatabaseClient):
         :param is_ifnotexists: Create table if not exists keyword
         """
         file_path = os.path.join(self.file_directory, table + ".csv")
-        print(file_path)
         columns = [e.split(' ')[0] for e in columns]
         if len(columns) != len(types):
             return False
@@ -67,8 +67,8 @@ class FileClient(DatabaseClient):
 
         self.lock.release()
         return True
-    
-    def insert(self, table, columns, types, values, primary_key_index=[], is_orreplace=False, is_commit=True):
+
+    def insert(self, table, columns, types, values, primary_key_index=(), is_orreplace=False, is_commit=True):
         """
         Insert into the table
         :param table: Table name
@@ -80,7 +80,7 @@ class FileClient(DatabaseClient):
         :param is_orreplace: Indicate if the query is "INSERT OR REPLACE"
         """
         ret = True
-        file_path = self.file_directory + table + ".csv"
+        file_path = os.path.join(self.file_directory, table + ".csv")
         if len(columns) != len(values):
             return False
 

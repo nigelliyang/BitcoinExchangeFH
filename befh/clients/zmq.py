@@ -1,9 +1,10 @@
-from befh.database_client import DatabaseClient
+from befh.clients.database import DatabaseClient
 from befh.util import Logger
 import threading
 import re
 import zmq
 import time
+
 
 class ZmqClient(DatabaseClient):
     """
@@ -56,7 +57,7 @@ class ZmqClient(DatabaseClient):
         """
         return []
 
-    def create(self, table, columns, types, primary_key_index=[], is_ifnotexists=True):
+    def create(self, table, columns, types, primary_key_index=(), is_ifnotexists=True):
         """
         Create table in the database.
         Caveat - Assign the first few column as the keys!!!
@@ -67,7 +68,7 @@ class ZmqClient(DatabaseClient):
         """
         return True
 
-    def insert(self, table, columns, types, values, primary_key_index=[], is_orreplace=False, is_commit=True):
+    def insert(self, table, columns, types, values, primary_key_index=(), is_orreplace=False, is_commit=True):
         """
         Insert into the table
         :param table: Table name
@@ -113,4 +114,4 @@ if __name__ == '__main__':
     for i in range(1, 100):
         db_client.insert('test', ['c1', 'c2', 'c3', 'c4'], [], ['abc', i, 1.1, 5])
         time.sleep(1)
-    
+

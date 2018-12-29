@@ -1,10 +1,11 @@
-from befh.database_client import DatabaseClient
+from befh.clients.database import DatabaseClient
 from befh.util import Logger
 import threading
 import re
 import numpy
 from qpython import qconnection
 from qpython.qcollection import QTable, QKeyedTable, QList
+
 
 class KdbPlusClient(DatabaseClient):
     """
@@ -80,10 +81,10 @@ class KdbPlusClient(DatabaseClient):
         self.conn = qconnection.QConnection(host=host, port=port)
         self.conn.open()
         if self.conn.is_connected():
-            Logger.info(self.__class__.__name__, 'Connection to %s:%d is successful.' % (host, port))    
+            Logger.info(self.__class__.__name__, 'Connection to %s:%d is successful.' % (host, port))
         else:
-            Logger.info(self.__class__.__name__, 'Connection to %s:%d is failed.' % (host, port))    
-            
+            Logger.info(self.__class__.__name__, 'Connection to %s:%d is failed.' % (host, port))
+
         return self.conn.is_connected()
 
 
@@ -114,7 +115,7 @@ class KdbPlusClient(DatabaseClient):
         """
         return []
 
-    def create(self, table, columns, types, primary_key_index=[], is_ifnotexists=True):
+    def create(self, table, columns, types, primary_key_index=(), is_ifnotexists=True):
         """
         Create table in the database.
         Caveat - Assign the first few column as the keys!!!
@@ -134,11 +135,11 @@ class KdbPlusClient(DatabaseClient):
                     if table == self.decode_qtypes(t):
                         Logger.info(self.__class__.__name__, "Table %s has been created." % table)
                         return True
-                        
+
             Logger.info(self.__class__.__name__, "Table %s is going to be created." % table)
-            
+
         c = columns[:]
-        
+
         for i in range(0, len(types)):
             t = self.convert_type(types[i])
             if t is str:
@@ -150,14 +151,14 @@ class KdbPlusClient(DatabaseClient):
                 c[i] += ":`float$()"
             elif t is int:
                 c[i] += ":`long$()"
-        
+
         keys = []
         for i in primary_key_index:
             keys.append(c[i])
-        
+
         for i in sorted(primary_key_index, reverse=True):
             del c[i]
-        
+
         if len(keys) > 0:
             command = '%s:([%s] %s)' % (table, '; '.join(keys), '; '.join(c))
         else:
@@ -170,10 +171,10 @@ class KdbPlusClient(DatabaseClient):
             Logger.error(self.__class__.__name__, "Error in creat statement(%s).\n%s" % (command, e))
         finally:
             self.lock.release()
-        
+
         return True
 
-    def insert(self, table, columns, types, values, primary_key_index=[], is_orreplace=False, is_commit=True):
+    def insert(self, table, columns, types, values, primary_key_index=(), is_orreplace=False, is_commit=True):
         """
         Insert into the table
         :param table: Table name
@@ -206,7 +207,7 @@ class KdbPlusClient(DatabaseClient):
                 v[i] = int(v[i])
 
         value_string = '; '.join([str(e) for e in v])
-        
+
         if is_orreplace:
             command = "`%s upsert (%s)" % (table, value_string)
         else:
@@ -234,17 +235,17 @@ class KdbPlusClient(DatabaseClient):
         :return Result rows
         """
         command = ''
-        
+
         # Select columns
         if len(columns) == 1 and columns[0] == '*':
             command = 'select from %s' % table
         else:
             command = 'select %s from %s' % (','.join(columns), table)
-        
+
         # Where condition
         if len(condition) > 0:
             command += ' where %s' % self.parse_condition(condition)
-        
+
         # Order by statement
         if len(orderby) > 0:
             orderbys = [e.strip() for e in orderby.split(',')]
@@ -258,10 +259,10 @@ class KdbPlusClient(DatabaseClient):
                     orderbys[i] = "%s xdesc " % ep[0]
                 else:
                     raise Exception("Incorrect orderby (%s) statement in select command." % orderby)
-               
+
             command = ''.join(orderbys) + command
             command = '`' + command
-        
+
         # Limit
         if limit > 0:
             command = "%d#%s" % (limit, command)
@@ -273,8 +274,8 @@ class KdbPlusClient(DatabaseClient):
         except Exception as e:
             raise Exception("Error in running select statement (%s).\n%s" % (command, e))
         finally:
-            self.lock.release()       
-        
+            self.lock.release()
+
         ret = []
         if isinstance(select_ret, QKeyedTable):
             for key, value in select_ret.iteritems():
@@ -294,7 +295,7 @@ class KdbPlusClient(DatabaseClient):
                         row = []
                         for e in value:
                             row.append(self.decode_qtypes(e))
-                            
+
                         ret.append(row)
         elif isinstance(select_ret, QList):
             for e in select_ret:
@@ -333,4 +334,4 @@ if __name__ == '__main__':
     Logger.info('test', db_client.select('test', columns=['c2', 'c3'], condition='c1 >= "abc" and c2 > 1'))
     # Logger.info('test', db_client.select('test', columns=['*'], orderby='c1 desc', limit=1))
     db_client.delete('test', 'c1="abc"')
-    
+

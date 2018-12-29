@@ -1,7 +1,8 @@
 #!/bin/python
 
-from befh.sql_client import SqlClient
+from befh.clients.sql import SqlClient
 import sqlite3
+
 
 class SqliteClient(SqlClient):
     """
@@ -26,31 +27,31 @@ class SqliteClient(SqlClient):
         self.conn = sqlite3.connect(path, check_same_thread=False)
         self.cursor = self.conn.cursor()
         return self.conn is not None and self.cursor is not None
-        
+
     def execute(self, sql):
         """
         Execute the sql command
         :param sql: SQL command
         """
-        self.cursor.execute(sql)
-        
+        return self.cursor.execute(sql)
+
     def commit(self):
         """
         Commit
-        """    
+        """
         self.conn.commit()
-        
+
     def fetchone(self):
         """
         Fetch one record
         :return Record
-        """        
-        return self.cursor.fetchone()     
+        """
+        return self.cursor.fetchone()
 
     def fetchall(self):
         """
         Fetch all records
         :return Record
-        """        
+        """
         return self.cursor.fetchall()
 

@@ -5,11 +5,14 @@ except ImportError:
     import urllib as urlrequest
 
 import json
+import ssl
 
 class RESTfulApiSocket(ApiSocket):
     """
     Generic REST API call
     """
+    DEFAULT_URLOPEN_TIMEOUT = 5
+
     def __init__(self):
         """
         Constructor
@@ -17,7 +20,7 @@ class RESTfulApiSocket(ApiSocket):
         ApiSocket.__init__(self)
 
     @classmethod
-    def request(cls, url):
+    def request(cls, url, verify_cert=True):
         """
         Web request
         :param: url: The url link
@@ -25,13 +28,21 @@ class RESTfulApiSocket(ApiSocket):
         """
         req = urlrequest.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
         # res = urlrequest.urlopen(url)
-        res = urlrequest.urlopen(req)
+        if verify_cert:
+            res = urlrequest.urlopen(
+                req,
+                timeout=RESTfulApiSocket.DEFAULT_URLOPEN_TIMEOUT)
+        else:
+            res = urlrequest.urlopen(
+                req,
+                context=ssl._create_unverified_context(),
+                timeout=RESTfulApiSocket.DEFAULT_URLOPEN_TIMEOUT)
         try:
             res = json.loads(res.read().decode('utf8'))
             return res
         except:
             return {}
-        
+
     @classmethod
     def parse_l2_depth(cls, instmt, raw):
         """

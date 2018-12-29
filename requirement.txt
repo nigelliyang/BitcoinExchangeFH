@@ -1,0 +1,6 @@
+pymysql
+websocket-client
+numpy
+qpython
+pyzmq
+tzlocal

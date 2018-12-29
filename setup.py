@@ -1,11 +1,11 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
     name='BitcoinExchangeFH',
-    version='0.1.3rc3',
+    version='0.2.5',
     author='Gavin Chan',
     author_email='gavincyi@gmail.com',
-    packages=['befh'],
+    packages=find_packages(),
     url='http://pypi.python.org/pypi/BitcoinExchangeFH/',
     license='LICENSE.txt',
     description='Cryptocurrency exchange market data feed handler.',
@@ -14,10 +14,10 @@ setup(
         },
     install_requires=[
             'pymysql',
-            'websocket',
             'websocket-client',
             'numpy',
             'qpython',
-            'pyzmq'
+            'pyzmq',
+            'tzlocal',
         ]
     )

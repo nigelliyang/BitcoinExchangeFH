@@ -27,24 +27,29 @@ Users can
 
 ## Supported exchanges
 
+- Binance (RESTful)
+- Bitflyer (RESTful)
 - Bitfinex (Websocket)
 - BitMEX (Websocket)
 - Bitstamp (Websocket)
+- Bittrex (RESTful)
 - BTCC (RESTful)
+- Cryptopia (RESTful)
+- Coincheck (RESTful)
 - Gatecoin (RESTful)
 - GDAX (Websocket)
+- HuoBi (Websocket)
 - Kraken (RESTful)
-- OkCoin (Websocket)
-- Quoine (RESTful)
+- Liqui (RESTful)
+- Luno (Websocket)
 - Poloniex (RESTful)
-- Bittrex (RESTful)
+- OkCoin (Websocket)
+- Okex (Websocket)
+- Quoine (RESTful)
+- Yunbi (RESTful)
+- Wex (Restful)
 
 Currently the support of other exchanges is still under development.
-
-Scheduled exchange supported soon:
-- xBTCe
-- DABTC
-- FX rate (USDCNY, EURUSD)
 
 ## Supported database/channel
 
@@ -79,11 +84,14 @@ BitcoinExchangeFH acts as a publisher in the
 [Publish/Subscibe](http://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/patterns/pubsub.html) model.
 You can open a TCP or inter-process traffic.
 
-For example, if you decide the data feed is subscribed at localhost at port 6001.
+For example, if you decide the data feed is subscribed at 127.0.0.1 at port 6001.
 
 ```
-bitcoinexchangefh -zmq -zmqdest "tcp://localhost:6001" -instmts subscription.ini
+bitcoinexchangefh -zmq -zmqdest "tcp://127.0.0.1:6001" -instmts subscription.ini
 ```
+
+According to [zmq-tcp](http://api.zeromq.org/2-1:zmq-tcp), please provide "127.0.0.1"
+instead of "localhost" as the local machine destination.
 
 If the data feed is subscribed via inter-process shared memory with address "bitcoin".
 
@@ -98,7 +106,7 @@ No further setup is required. Just define the output sqlite file.
 For example, to record the data to default sqlite file "bitcoinexchange.raw", run the command
 
 ```
-bitcoinexchangefh -sqlite -sqlpath bitcoinexchangefh.sqlite -instmts subscription.ini
+bitcoinexchangefh -sqlite -sqlitepath bitcoinexchangefh.sqlite -instmts subscription.ini
 ```
 
 #### Kdb+
@@ -144,7 +152,7 @@ For example to a folder named "data", you can run the following command.
 bitcoinexchangefh -csv -csvpath data/ -instmts subscription.ini
 ```
 
-### Multiple destination.
+### Multiple destination
 
 Bitcoinexchangefh supports multiple destinations. 
 
@@ -191,6 +199,42 @@ All market data are stored in the dedicated database. For each instrument, there
 ```
 exch_<exchange name>_<instrument name>_snapshot
 ```
+
+### Output
+
+Each record (in any output format e.g. CSV/SQLite/KDB+/etc) indicates either a new trade or a change in the order book. 
+
+The column definition is as follows:
+
+|Name|Description|
+|---|---|
+|trade_px|Last trade price|
+|trade_volume|Last trade volume|
+|b\<n\>, a\<n\>|Best bid and ask prices, where n is between 1 and 5|
+|bq\<n\>, aq\<n\>|Best bid and ask volumes, where n is between 1 and 5|
+|update_type|Update type. 1 indicates price depth update, and 2 indicates trade update|
+|order_date_time, trade_date_time|Last update time for the price depth and the trades|
+
+### Library 
+
+If you do not like the console application and would like to write your own, you can use it as
+a library.
+
+```
+    from befh.exch_bittrex import ExchGwApiBittrex as Feed
+    from befh.instrument import Instrument
+    instmt = Instrument(exchange_name="Bittrex", 
+                        instmt_name="LTC/BTC",
+                        instmt_code="BTC-LTC")
+
+    # Get the order book depth
+    depth = Feed.get_order_book(instmt)
+
+    # Get the trades
+    trades = Feed.get_trades(instmt)
+```
+
+where parameter `instmt_code` is the exchange API instrument code.
 
 ## Inquiries
 
