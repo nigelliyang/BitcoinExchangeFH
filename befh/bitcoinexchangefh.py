@@ -3,25 +3,10 @@
 import argparse
 import sys
 
-from befh.exchange import ExchangeGateway
-from befh.exch_bitmex import ExchGwBitmex
-from befh.exch_btcc import ExchGwBtccSpot, ExchGwBtccFuture
-from befh.exch_bitfinex import ExchGwBitfinex
-from befh.exch_okcoin import ExchGwOkCoin
+
 from befh.exch_okcoin_cn import ExchGwOkCoinCN
 from befh.exch_jubi import ExchGwJubiSpot
-from befh.exch_kraken import ExchGwKraken
-from befh.exch_gdax import ExchGwGdax
-from befh.exch_bitstamp import ExchGwBitstamp
-from befh.exch_gatecoin import ExchGwGatecoin
-from befh.exch_quoine import ExchGwQuoine
-from befh.exch_poloniex import ExchGwPoloniex
-from befh.exch_bittrex import ExchGwBittrex
 # from befh.kdbplus_client import KdbPlusClient
-from befh.mysql_client import MysqlClient
-from befh.sqlite_client import SqliteClient
-from befh.file_client import FileClient
-from befh.zmq_client import ZmqClient
 from befh.exchanges.gateway import ExchangeGateway
 from befh.exchanges.bitmex import ExchGwBitmex
 from befh.exchanges.btcc import ExchGwBtccSpot, ExchGwBtccFuture
